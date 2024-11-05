@@ -1,0 +1,10 @@
+[project]
+name = "tcl-scripts"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pytk>=0.0.2.1",
+    "tkinterdnd2>=0.4.2",
+]
