@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import threading
 
@@ -40,7 +41,7 @@ class MyApp(TkinterDnD.Tk):
             messagebox.showerror(
                 'Error', 'Please load a Vivado project file first')
             return
-        elif os.path.splitext(self.frame_dnd.path) != '.xpr':
+        elif os.path.splitext(self.frame_dnd.path)[1] != '.xpr':
             messagebox.showerror(
                 'Error', 'Please load a Vivado project file with .xpr extension')
             return
@@ -52,16 +53,21 @@ class MyApp(TkinterDnD.Tk):
     def process(self):
         project_dir, project_name, bit_path, mcs_path = tcl.get_project_paths(
             self.frame_dnd.path)
-        tcl.generate_tcl(project_dir, bit_path, mcs_path)
+        tcl.generate_tcl(self.frame_dnd.path, bit_path, mcs_path)
         p = tcl.run_tcl()
         for line in p.stdout:
+            pattern = r"(INFO|ERROR|WARNING): (.+)"
+            match = re.match(pattern, line)
+            if match:
+                if match.group(1) == 'ERROR':
+                    messagebox.showerror('Error', match.group(2))
             self.frame_log.log.insert('end', line)
             self.frame_log.log.see('end')
         try:
             outs, errs = p.communicate(timeout=15)
         except subprocess.TimeoutExpired:
             self.slider.stop()
-        else:
+        finally:
             p.terminate()
             self.slider.stop()
 
